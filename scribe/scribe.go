@@ -2,11 +2,10 @@ package scribe
 
 import (
 	"errors"
-	"log"
 	"net"
 
-	"github.com/cloudaice/scribe-go/facebook/scribe"
 	"git.apache.org/thrift.git/lib/go/thrift"
+	"github.com/cloudaice/scribe-go/facebook/scribe"
 )
 
 type ScribeLoger struct {
@@ -14,10 +13,10 @@ type ScribeLoger struct {
 	client    *scribe.ScribeClient
 }
 
-func NewScribeLoger(host, port string) *ScribeLoger {
+func NewScribeLoger(host, port string) (*ScribeLoger, error) {
 	Ttransport, err := thrift.NewTSocket(net.JoinHostPort(host, port))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	transport := thrift.NewTFramedTransport(Ttransport)
 
@@ -25,12 +24,12 @@ func NewScribeLoger(host, port string) *ScribeLoger {
 
 	client := scribe.NewScribeClientProtocol(transport, protocol, protocol)
 	if err := transport.Open(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	return &ScribeLoger{
 		transport: transport,
 		client:    client,
-	}
+	}, nil
 }
 
 func (this *ScribeLoger) SendOne(category, message string) (bool, error) {
@@ -70,6 +69,6 @@ func (this *ScribeLoger) dealResult(result scribe.ResultCode) (bool, error) {
 	return ok, err
 }
 
-func (this *ScribeLoger) Close() {
-	this.transport.Close()
+func (this *ScribeLoger) Close() error {
+	return this.transport.Close()
 }
