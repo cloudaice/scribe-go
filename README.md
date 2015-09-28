@@ -14,8 +14,12 @@ Getting Started
 ===============
 
     import "github.com/cloudaice/scribe-go/scribe"
+    
 
-    client := scribe.NewScribeLoger("host", "port")
+    client, err := scribe.NewScribeLoger("host", "port")
+    if err != nil {
+        log.Fatal(err)
+    }
     defer client.Close()
 
     ok, err := client.SendOne("category", "message")
